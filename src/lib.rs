@@ -26,7 +26,7 @@ impl ModeButton {
     }
 }
 
-/// Simple abstraction around the user LED at the top right of the board button connected to the D7/P1.12 pin.
+/// Simple abstraction around the user LED at the top right of the board connected to the D7/P1.12 pin.
 pub struct Led {
     pin: P1_12<Output<PushPull>>,
 }
