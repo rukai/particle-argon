@@ -12,9 +12,11 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 nrf52840-hal = { version = "0.12.1", features = ["rt"] }
-cortex-m = "0.6.2"
+
+[dev-dependencies]
+cortex-m = "0.7.2"
 cortex-m-rt = "0.6.12"
-rtt-target = {version = "0.2.0", features = ["cortex-m"] }
+rtt-target = {version = "0.3.0", features = ["cortex-m"] }
 
 [dependencies.embedded-hal]
 version = "0.2.3"
