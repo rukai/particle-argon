@@ -1,0 +1,4 @@
+[toolchain]
+channel = "nightly-2021-05-08"
+components = [ "rust-src" ]
+targets = [ "thumbv7em-none-eabi" ]

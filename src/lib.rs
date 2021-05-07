@@ -2,21 +2,20 @@
 
 pub mod board_pins;
 
-use nrf52840_hal::gpio::p0::P0_11;
-use nrf52840_hal::gpio::p1::P1_12;
-use nrf52840_hal::gpio::{Input, Output, PullUp, PushPull, Disconnected, Level};
-use nrf52840_hal::prelude::*;
+use embassy_nrf::peripherals::{P0_11, P1_12};
+use embassy_nrf::gpio::{Level, Output, Input, Pull, OutputDrive};
+use embedded_hal::digital::v2::{OutputPin, InputPin};
 
-/// Simple abstraction around the MODE button connected to the MD/P0.11 pin.
 pub struct ModeButton {
-    pin: P0_11<Input<PullUp>>,
+    pin: Input<'static, P0_11>,
 }
 
+/// Simple abstraction around the MODE button connected to the MD/P0.11 pin.
 impl ModeButton {
     /// Initialize the button.
-    pub fn new(pin: P0_11<Disconnected>) -> Self {
+    pub fn new(pin: P0_11) -> Self {
         ModeButton {
-            pin: pin.into_pullup_input(),
+            pin: Input::new(pin, Pull::Up),
         }
     }
 
@@ -28,14 +27,14 @@ impl ModeButton {
 
 /// Simple abstraction around the user LED at the top right of the board connected to the D7/P1.12 pin.
 pub struct Led {
-    pin: P1_12<Output<PushPull>>,
+    pin: Output<'static, P1_12>,
 }
 
 impl Led {
     /// Initialize the LED, LED remains off.
-    pub fn new(pin: P1_12<Disconnected>) -> Self {
+    pub fn new(pin: P1_12) -> Self {
         Led {
-            pin: pin.into_push_pull_output(Level::Low),
+            pin: Output::new(pin, Level::Low, OutputDrive::Standard), //TODO: PushPull
         }
     }
 

@@ -4,55 +4,54 @@
 //! It's easier to just think about the pin naming solely from the nrf52840 perspective.
 //! But it's provided in case you do want to use it or just as documentation.
 
-use nrf52840_hal::gpio::p0::*;
-use nrf52840_hal::gpio::p1::*;
+use embassy_nrf::peripherals::*;
 
 // Right hand side
 
 /// Data pin for I2C or digital GPIO.
-pub type SDA<T> = P0_26<T>;
+pub type SDA = P0_26;
 /// Clock pin for I2C or digital GPIO.
-pub type SCL<T> = P0_27<T>;
+pub type SCL = P0_27;
 /// Digital GPIO. PWM-able.
-pub type D2<T> = P1_01<T>;
+pub type D2 = P1_01;
 /// Digital GPIO. PWM-able.
-pub type D3<T> = P1_02<T>;
+pub type D3 = P1_02;
 /// Digital GPIO. PWM-able.
-pub type D4<T> = P1_08<T>;
+pub type D4 = P1_08;
 /// Digital GPIO. PWM-able.
-pub type D5<T> = P1_10<T>;
+pub type D5 = P1_10;
 /// Digital GPIO. PWM-able.
-pub type D6<T> = P1_11<T>;
+pub type D6 = P1_11;
 /// Digital GPIO. PWM-able.
-pub type D7<T> = P1_12<T>;
+pub type D7 = P1_12;
 /// Digital GPIO. PWM-able.
-pub type D8<T> = P1_03<T>;
+pub type D8 = P1_03;
 
 // Left hand side
 
 /// TX pin for UART or digital GPIO.
-pub type TX<T> = P0_06<T>;
+pub type TX = P0_06;
 /// RX pin for UART or digital GPIO.
-pub type RX<T> = P0_08<T>;
+pub type RX = P0_08;
 /// MI pin for SPI or digital GPIO.
-pub type MI<T> = P1_14<T>;
+pub type MI = P1_14;
 /// MO pin for SPI or digital GPIO.
-pub type MO<T> = P1_13<T>;
+pub type MO = P1_13;
 /// SCK pin for SPI or digital GPIO.
-pub type SCK<T> = P1_15<T>;
+pub type SCK = P1_15;
 /// Analog input pin or digital GPIO. PWM-able.
-pub type A5<T> = P0_31<T>;
+pub type A5 = P0_31;
 /// Analog input pin or digital GPIO. PWM-able.
-pub type A4<T> = P0_30<T>;
+pub type A4 = P0_30;
 /// Analog input pin or digital GPIO. PWM-able.
-pub type A3<T> = P0_29<T>;
+pub type A3 = P0_29;
 /// Analog input pin or digital GPIO. PWM-able.
-pub type A2<T> = P0_28<T>;
+pub type A2 = P0_28;
 /// Analog input pin or digital GPIO. PWM-able.
-pub type A1<T> = P0_04<T>;
+pub type A1 = P0_04;
 /// Analog input pin or digital GPIO. PWM-able.
-pub type A0<T> = P0_03<T>;
+pub type A0 = P0_03;
 /// Active-low MODE button pin.
-pub type MD<T> = P0_11<T>;
+pub type MD = P0_11;
 /// Active-low system reset button pin. Internally pulled-up.
-pub type RST<T> = P0_18<T>;
+pub type RST = P0_18;

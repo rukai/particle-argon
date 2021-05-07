@@ -1,31 +1,43 @@
-#![no_main]
 #![no_std]
+#![no_main]
+#![feature(min_type_alias_impl_trait)]
+#![feature(impl_trait_in_bindings)]
+#![feature(type_alias_impl_trait)]
+#![allow(incomplete_features)]
 
-use nrf52840_hal as hal;
-use rtt_target::{rprintln, rtt_init_print};
+use defmt::panic;
+use defmt_rtt as _; // global logger
+use panic_probe as _;
+pub use defmt::*;
+
+use core::sync::atomic::{AtomicUsize, Ordering};
+
+defmt::timestamp! {"{=u64}", {
+    static COUNT: AtomicUsize = AtomicUsize::new(0);
+    // NOTE(no-CAS) `timestamps` runs with interrupts disabled
+    let n = COUNT.load(Ordering::Relaxed);
+    COUNT.store(n + 1, Ordering::Relaxed);
+    n as u64
+}}
+
+use embassy::executor::Spawner;
+use embassy::time::{Duration, Timer};
+use embassy_nrf::Peripherals;
+
 use particle_argon::{ModeButton, Led};
 
-#[panic_handler] // panicking behavior
-fn panic(_: &core::panic::PanicInfo) -> ! {
-    loop {
-        cortex_m::asm::bkpt();
-    }
-}
+#[embassy::main]
+async fn main(_spawner: Spawner) {
+    let p = Peripherals::take().unwrap();
+    let button = ModeButton::new(p.P0_11);
+    let mut led = Led::new(p.P1_12);
 
-#[cortex_m_rt::entry]
-fn main() -> ! {
-    rtt_init_print!();
-    let p = hal::pac::Peripherals::take().unwrap();
-    let port0 = hal::gpio::p0::Parts::new(p.P0);
-    let port1 = hal::gpio::p1::Parts::new(p.P1);
-    let button = ModeButton::new(port0.p0_11);
-    let mut led  = Led::new(port1.p1_12);
-
-    rprintln!("Blinky button demo starting");
     loop {
+        Timer::after(Duration::from_millis(300)).await;
         if button.is_held_down() {
             led.on();
-        } else {
+        }
+        else {
             led.off();
         }
     }
