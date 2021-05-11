@@ -32,8 +32,11 @@ async fn main(_spawner: Spawner) {
     let button = ModeButton::new(p.P0_11);
     let mut led = Led::new(p.P1_12);
 
+    info!("started");
+
     loop {
         Timer::after(Duration::from_millis(300)).await;
+        info!("tick");
         if button.is_held_down() {
             led.on();
         }

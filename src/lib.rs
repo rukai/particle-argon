@@ -6,11 +6,11 @@ use embassy_nrf::peripherals::{P0_11, P1_12};
 use embassy_nrf::gpio::{Level, Output, Input, Pull, OutputDrive};
 use embedded_hal::digital::v2::{OutputPin, InputPin};
 
+/// Simple abstraction around the MODE button connected to the MD/P0.11 pin.
 pub struct ModeButton {
     pin: Input<'static, P0_11>,
 }
 
-/// Simple abstraction around the MODE button connected to the MD/P0.11 pin.
 impl ModeButton {
     /// Initialize the button.
     pub fn new(pin: P0_11) -> Self {
