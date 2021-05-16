@@ -5,22 +5,27 @@
 #![feature(type_alias_impl_trait)]
 #![allow(incomplete_features)]
 
-use esp_at_driver::{EspAt, WifiMode};
+use particle_argon::{EspDriver, Led};
+//use esp_at_driver::{EspAt, WifiMode, ConnectionConfig};
 
 use defmt::panic;
 use embassy::time::{Duration, Timer};
 use embassy::executor::Spawner;
 use embassy::util::Steal;
-use embassy_nrf::gpio::NoPin;
 use embassy_nrf::{interrupt, uarte, Peripherals};
-use embassy_nrf::buffered_uarte::BufferedUarte;
-use futures::pin_mut;
+//use embassy_nrf::buffered_uarte::BufferedUarte;
+//use futures::pin_mut;
+//use futures::poll;
 
 use defmt_rtt as _; // global logger
 use panic_probe as _;
-pub use defmt::*;
+//pub use defmt::*;
+pub use defmt::info;
 
 use core::sync::atomic::{AtomicUsize, Ordering};
+
+//use embassy::io::{AsyncWriteExt, AsyncBufReadExt};
+use embassy_traits::uart::{Write, Read};
 
 defmt::timestamp! {"{=u64}", {
     static COUNT: AtomicUsize = AtomicUsize::new(0);
@@ -30,43 +35,140 @@ defmt::timestamp! {"{=u64}", {
     n as u64
 }}
 
-#[embassy::main]
+use embassy_nrf::system;
+
+fn get_clock_config() -> system::Config {
+    let mut config = system::Config::default();
+    config.hfclk_source = system::HfclkSource::ExternalXtal;
+    config.lfclk_source = system::LfclkSource::ExternalXtal;
+    config
+}
+
+#[embassy::main(config = "get_clock_config()")]
 async fn main(_spawner: Spawner) {
     let p = unsafe { Peripherals::steal() };
 
-    let mut config = uarte::Config::default();
-    config.parity = uarte::Parity::EXCLUDED;
-    config.baudrate = uarte::Baudrate::BAUD115200;
+    let mut led = Led::new(p.P1_12);
+    led.off();
 
     let irq = interrupt::take!(UARTE0_UART0);
 
-    let mut tx_buffer = [0u8; 4096];
-    let mut rx_buffer = [0u8; 4096];
-    let uart = unsafe {
-        BufferedUarte::new(
-            p.UARTE0,
-            p.TIMER0,
-            p.PPI_CH0,
-            p.PPI_CH1,
-            irq,
-            p.P0_08,
-            p.P0_06,
-            NoPin,
-            NoPin,
-            config,
-            &mut rx_buffer,
-            &mut tx_buffer,
-        )
-    };
+    let _esp_driver = EspDriver::new(p.P0_24, p.P0_16).await;
 
-    info!("uart initialized!");
+    Timer::after(Duration::from_millis(3000)).await;
+    let mut config = uarte::Config::default();
+    config.parity = uarte::Parity::EXCLUDED;
+    //config.baudrate = uarte::Baudrate::BAUD115200;
+    config.baudrate = uarte::Baudrate::BAUD921600;
 
-    pin_mut!(uart);
-    let mut esp_at = EspAt::new(uart);
+    let mut uart = unsafe { uarte::Uarte::new(p.UARTE0, irq, p.P1_05, p.P1_04, p.P1_07, p.P1_06, config) };
+    Timer::after(Duration::from_millis(1000)).await;
+    info!("before write");
+    uart.write(b"AT\r\n").await.unwrap();
+    Timer::after(Duration::from_millis(1000)).await;
+    led.on();
+    info!("after write");
+    let mut buf = [0; 4];
+    if let Ok(foo) = uart.read(&mut buf).await {
+        info!("foo: {}", foo);
+    }
+    else {
+        info!("uh oh");
+    }
 
     loop {
-        esp_at.set_wifi_mode(WifiMode::Station).await.unwrap();
-        info!("set wifi mode...");
-        Timer::after(Duration::from_millis(10000)).await;
+        Timer::after(Duration::from_millis(1000)).await;
+        info!("chilling...");
+        //let mut tx_buffer = [0u8; 4096];
+        //let mut rx_buffer = [0u8; 4096];
+        //let uart = unsafe {
+        //    BufferedUarte::new(
+        //        &mut p.UARTE1,
+        //        &mut p.TIMER3,
+        //        &mut p.PPI_CH5,
+        //        &mut p.PPI_CH6,
+        //        &mut irq,
+        //        &mut p.P1_05,
+        //        &mut p.P1_04,
+        //        &mut p.P1_07,
+        //        &mut p.P1_06,
+        //        config,
+        //        &mut rx_buffer,
+        //        &mut tx_buffer,
+        //    )
+        //};
+        //info!("uart initialized!");
+        //pin_mut!(uart);
+        //Timer::after(Duration::from_millis(1000)).await;
+        //info!("before write");
+        //uart.write_all(b"AT\r\n").await.unwrap();
+        //Timer::after(Duration::from_millis(1000)).await;
+        //info!("after write");
+        //// TODO: lets throw lots of prints in here to see whats happening?
+        //if let Ok(foo) = uart.read_byte().await {
+        //    info!("foo: {}", foo);
+        //}
+        //else {
+        //    info!("uh oh");
+        //}
+        //info!("foo: {}", rx_buffer);
+        //if let Ready(foo) = poll!(uart.poll_fill_buf()) {
+        //    info!("foo: {}", foo);
+        //}
+        //else {
+        //    info!("uh oh");
+        //}
     }
+//    let mut esp_at = EspAt::new(uart);
+//
+//    let http = r#"GET /super_secret_url HTTP/1.1
+//Host: developer.mozilla.org
+//Accept-Language: fr
+//"#;
+//
+//    Timer::after(Duration::from_millis(10000)).await;
+//    info!("before read!");
+//    esp_at.direct_read().await.unwrap(); // TODO: lets try running a newer probe-rs maybe????
+//    info!("after read!");
+//    esp_at.set_wifi_mode(WifiMode::Station).await.unwrap();
+//    info!("set wifi mode...");
+//
+//    Timer::after(Duration::from_millis(10000)).await;
+//    esp_at.direct_read().await.unwrap();
+//    let config = ConnectionConfig {
+//        ssid: Some("OPTUS_64_FD8C"),
+//        password: Some("bikerflosh77117"),
+//        ..
+//        ConnectionConfig::default()
+//    };
+//    esp_at.connect_to_access_point(config).await.unwrap();
+//    Timer::after(Duration::from_millis(1000)).await;
+//    esp_at.direct_read().await.unwrap();
+//    info!("connect to access point...");
+//
+//    Timer::after(Duration::from_millis(10000)).await;
+//    esp_at.direct_read().await.unwrap();
+//    esp_at.direct_write(r#"AT+CIPSTART="TCP","192.168.0.105",8000\r\n"#.as_bytes()).await.unwrap();
+//    Timer::after(Duration::from_millis(100)).await;
+//    esp_at.direct_read().await.unwrap();
+//    info!("connect to tcp socket...");
+//
+//    loop {
+//        Timer::after(Duration::from_millis(10000)).await;
+//        esp_at.direct_read().await.unwrap();
+//        let mut send_command = String::<128>::new();
+//        write!(send_command, "AT+CIPSEND={}\r\n", http.len()).unwrap();
+//        esp_at.direct_write(send_command.as_bytes()).await.unwrap();
+//        Timer::after(Duration::from_millis(100)).await;
+//        esp_at.direct_read().await.unwrap();
+//        info!("start send");
+//
+//        // waiting for ">"
+//        Timer::after(Duration::from_millis(1000)).await;
+//        esp_at.direct_read().await.unwrap();
+//        esp_at.direct_write(http.as_bytes()).await.unwrap();
+//        Timer::after(Duration::from_millis(100)).await;
+//        esp_at.direct_read().await.unwrap();
+//        info!("complete send");
+//    }
 }

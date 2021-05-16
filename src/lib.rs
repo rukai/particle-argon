@@ -2,9 +2,11 @@
 
 pub mod board_pins;
 
-use embassy_nrf::peripherals::{P0_11, P1_12};
+use embassy::time::{Duration, Timer};
 use embassy_nrf::gpio::{Level, Output, Input, Pull, OutputDrive};
+use embassy_nrf::peripherals::{P0_11, P0_16, P0_24, P1_12};
 use embedded_hal::digital::v2::{OutputPin, InputPin};
+use defmt::unwrap;
 
 /// Simple abstraction around the MODE button connected to the MD/P0.11 pin.
 pub struct ModeButton {
@@ -34,7 +36,7 @@ impl Led {
     /// Initialize the LED, LED remains off.
     pub fn new(pin: P1_12) -> Self {
         Led {
-            pin: Output::new(pin, Level::Low, OutputDrive::Standard), //TODO: PushPull
+            pin: Output::new(pin, Level::Low, OutputDrive::Standard),
         }
     }
 
@@ -48,3 +50,28 @@ impl Led {
         self.pin.set_low().unwrap();
     }
 }
+
+pub struct EspDriver {
+    // TODO: store parts for EspAT
+    _chip_pu: Output<'static, P0_24>,
+    _boot_firmware: Output<'static, P0_16>,
+}
+
+impl EspDriver {
+    /// Initialize the EspDriver
+    pub async fn new(chip_pu: P0_24, boot_firmware: P0_16) -> Self {
+        let _boot_firmware = Output::new(boot_firmware, Level::High, OutputDrive::Standard);
+
+        let mut _chip_pu = Output::new(chip_pu, Level::Low, OutputDrive::Standard0Disconnect1);
+        Timer::after(Duration::from_millis(100)).await; // TODO: probably only need 1ms
+
+        unwrap!(_chip_pu.set_high());
+
+        Timer::after(Duration::from_millis(100)).await; // TODO: how long?
+        EspDriver { _chip_pu, _boot_firmware }
+    }
+}
+
+//macro_rules! turn_on_uart_and_get_at_driver {
+//    // TODO: grab parts from wifi and return an EspAt
+//}

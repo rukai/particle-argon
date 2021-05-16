@@ -4,10 +4,8 @@
 [![Released API docs](https://docs.rs/particle-argon/badge.svg)](https://docs.rs/particle-argon)
 
 Provides basic abstractions for the LED and MODE button.
-Examples demonstrate how to access wifi via the [esp-at-driver](https://github.com/rukai/esp-at-driver) crate.
-Wifi support over the ESP32 coprocessor is a WIP.
-
-My board hasnt actually arrived yet so this is all powered on wishful thinking and rust's type safety.
+Uses the [esp-at-driver](https://github.com/rukai/esp-at-driver) crate to provide wifi access via the ESP coprocessor.
+Wifi support over the ESP32 coprocessor is a WIP, nothing works yet.
 
 ## License
 

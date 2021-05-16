@@ -36,12 +36,13 @@ async fn main(_spawner: Spawner) {
 
     loop {
         Timer::after(Duration::from_millis(300)).await;
-        info!("tick");
         if button.is_held_down() {
             led.on();
+            info!("led on");
         }
         else {
             led.off();
+            info!("led off");
         }
     }
 }
