@@ -63,7 +63,7 @@ impl EspDriver {
         let _boot_firmware = Output::new(boot_firmware, Level::High, OutputDrive::Standard);
 
         let mut _chip_pu = Output::new(chip_pu, Level::Low, OutputDrive::Standard0Disconnect1);
-        Timer::after(Duration::from_millis(100)).await; // TODO: probably only need 1ms
+        Timer::after(Duration::from_millis(1)).await;
 
         unwrap!(_chip_pu.set_high());
 
