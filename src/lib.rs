@@ -67,7 +67,7 @@ impl EspDriver {
 
         unwrap!(_chip_pu.set_high());
 
-        Timer::after(Duration::from_millis(100)).await; // TODO: how long?
+        Timer::after(Duration::from_millis(1000)).await; // TODO: how long?
         EspDriver { _chip_pu, _boot_firmware }
     }
 }

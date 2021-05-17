@@ -27,8 +27,7 @@ use embassy_nrf::Peripherals;
 use particle_argon::{ModeButton, Led};
 
 #[embassy::main]
-async fn main(_spawner: Spawner) {
-    let p = Peripherals::take().unwrap();
+async fn main(_spawner: Spawner, p: Peripherals) {
     let button = ModeButton::new(p.P0_11);
     let mut led = Led::new(p.P1_12);
 
