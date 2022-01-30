@@ -1,24 +1,22 @@
 #![no_std]
 #![no_main]
-#![feature(min_type_alias_impl_trait)]
-#![feature(impl_trait_in_bindings)]
 #![feature(type_alias_impl_trait)]
 #![allow(incomplete_features)]
 
+use esp_at_driver::{ConnectionConfig, EspAt, WifiMode};
 use particle_argon::EspDriver;
-use esp_at_driver::{EspAt, WifiMode, ConnectionConfig};
 
 use defmt::panic;
-use embassy::time::{Duration, Timer};
 use embassy::executor::Spawner;
-use embassy_nrf::{interrupt, uarte, Peripherals};
+use embassy::time::{Duration, Timer};
 use embassy_nrf::buffered_uarte::BufferedUarte;
+use embassy_nrf::{interrupt, uarte, Peripherals};
 use futures::pin_mut;
 
+use core::fmt::Write;
+pub use defmt::info;
 use defmt_rtt as _; // global logger
 use panic_probe as _;
-pub use defmt::info;
-use core::fmt::Write;
 
 use core::sync::atomic::{AtomicUsize, Ordering};
 use heapless::String;
@@ -31,7 +29,7 @@ defmt::timestamp! {"{=u64}", {
     n as u64
 }}
 
-use embassy_nrf::config::{HfclkSource, LfclkSource, Config as ClockConfig};
+use embassy_nrf::config::{Config as ClockConfig, HfclkSource, LfclkSource};
 
 fn get_clock_config() -> ClockConfig {
     let mut config = ClockConfig::default();
@@ -99,8 +97,7 @@ Accept-Language: fr
     let config = ConnectionConfig {
         ssid: Some("OPTUS_64_FD8C"),
         password: Some("GET_FROM_ENV_VAR"),
-        ..
-        ConnectionConfig::default()
+        ..ConnectionConfig::default()
     };
     esp_at.connect_to_access_point(config).await.unwrap();
     Timer::after(Duration::from_millis(1000)).await;
@@ -109,7 +106,10 @@ Accept-Language: fr
 
     Timer::after(Duration::from_millis(10000)).await;
     esp_at.direct_read().await.unwrap();
-    esp_at.direct_write(r#"AT+CIPSTART="TCP","192.168.0.105",8000\r\n"#.as_bytes()).await.unwrap();
+    esp_at
+        .direct_write(r#"AT+CIPSTART="TCP","192.168.0.105",8000\r\n"#.as_bytes())
+        .await
+        .unwrap();
     Timer::after(Duration::from_millis(100)).await;
     esp_at.direct_read().await.unwrap();
     info!("connect to tcp socket...");

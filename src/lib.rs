@@ -3,10 +3,9 @@
 pub mod board_pins;
 
 use embassy::time::{Duration, Timer};
-use embassy_nrf::gpio::{Level, Output, Input, Pull, OutputDrive};
+use embassy_nrf::gpio::{Input, Level, Output, OutputDrive, Pull};
 use embassy_nrf::peripherals::{P0_11, P0_16, P0_24, P1_12};
-use embedded_hal::digital::v2::{OutputPin, InputPin};
-use defmt::unwrap;
+use embedded_hal::digital::v2::InputPin;
 
 /// Simple abstraction around the MODE button connected to the MD/P0.11 pin.
 pub struct ModeButton {
@@ -42,12 +41,12 @@ impl Led {
 
     /// Turn the LED on.
     pub fn on(&mut self) {
-        self.pin.set_high().unwrap();
+        self.pin.set_high();
     }
 
     /// Turn the LED off.
     pub fn off(&mut self) {
-        self.pin.set_low().unwrap();
+        self.pin.set_low();
     }
 }
 
@@ -65,10 +64,13 @@ impl EspDriver {
         let mut _chip_pu = Output::new(chip_pu, Level::Low, OutputDrive::Standard0Disconnect1);
         Timer::after(Duration::from_millis(1)).await;
 
-        unwrap!(_chip_pu.set_high());
+        _chip_pu.set_high();
 
         Timer::after(Duration::from_millis(1000)).await; // TODO: how long?
-        EspDriver { _chip_pu, _boot_firmware }
+        EspDriver {
+            _chip_pu,
+            _boot_firmware,
+        }
     }
 }
 

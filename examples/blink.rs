@@ -1,14 +1,11 @@
 #![no_std]
 #![no_main]
-#![feature(min_type_alias_impl_trait)]
-#![feature(impl_trait_in_bindings)]
 #![feature(type_alias_impl_trait)]
 #![allow(incomplete_features)]
 
-use defmt::panic;
+pub use defmt::*;
 use defmt_rtt as _; // global logger
 use panic_probe as _;
-pub use defmt::*;
 
 use core::sync::atomic::{AtomicUsize, Ordering};
 
@@ -24,7 +21,7 @@ use embassy::executor::Spawner;
 use embassy::time::{Duration, Timer};
 use embassy_nrf::Peripherals;
 
-use particle_argon::{ModeButton, Led};
+use particle_argon::{Led, ModeButton};
 
 #[embassy::main]
 async fn main(_spawner: Spawner, p: Peripherals) {
@@ -38,8 +35,7 @@ async fn main(_spawner: Spawner, p: Peripherals) {
         if button.is_held_down() {
             led.on();
             info!("led on");
-        }
-        else {
+        } else {
             led.off();
             info!("led off");
         }
